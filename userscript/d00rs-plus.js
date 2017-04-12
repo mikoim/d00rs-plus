@@ -5,7 +5,7 @@
 // @description  Enhances the DOORS(Doshisha University Library) Experience
 // @author       Eshin Kunishima
 // @require      https://unpkg.com/vue
-// @match        http://localhost:8989/test.html
+// @match        https://doors.doshisha.ac.jp/opac/bok_req/?lang=*
 // @grant        none
 // ==/UserScript==
 
@@ -83,28 +83,9 @@
                 let self = this;
                 let uri = `https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%20%3D%20'${encodeURI(value + '.json')}'&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys`;
                 xhr.open('GET', uri);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    }
-
-                    switch (xhr.readyState) {
-                        case XMLHttpRequest.UNSENT:
-                            break;
-                        case XMLHttpRequest.OPENED:
-                        case XMLHttpRequest.HEADERS_RECEIVED:
-                        case XMLHttpRequest.LOADING:
-                            self.status = 'Loading...';
-                            break;
-                        case XMLHttpRequest.DONE:
-                            if (xhr.status === 200) {
-                                fillRequestForm(JSON.parse(xhr.responseText).query.results.json);
-                                self.status = 'Done';
-                            } else {
-                                self.status = xhr.statusText;
-                            }
-                            break;
-                    }
-                };
+                xhr.onreadystatechange = self.xhrState(xhr, self, function (xhr, self) {
+                    fillRequestForm(JSON.parse(xhr.responseText).query.results.json);
+                });
                 xhr.send();
             }
         },
@@ -114,36 +95,36 @@
                 let self = this;
                 let uri = `https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20xml%20where%20url%20%3D%20'http%3A%2F%2Fiss.ndl.go.jp%2Fapi%2Fopensearch%3Fcnt%3D10%26mediatype%3D1%26any%3D${encodeURI(encodeURI(this.keyword))}'&format=json`;
                 xhr.open('GET', uri);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    }
-
-                    switch (xhr.readyState) {
-                        case XMLHttpRequest.UNSENT:
-                            break;
-                        case XMLHttpRequest.OPENED:
-                        case XMLHttpRequest.HEADERS_RECEIVED:
-                        case XMLHttpRequest.LOADING:
-                            self.status = 'Loading...';
-                            break;
-                        case XMLHttpRequest.DONE:
-                            if (xhr.status === 200) {
-                                self.books = JSON.parse(xhr.responseText).query.results.rss.channel.item.map(function (obj) {
-                                    return {
-                                        title: obj.title[0],
-                                        author: obj.author,
-                                        publisher: obj.publisher,
-                                        link: obj.link
-                                    };
-                                });
-                                self.status = 'Done';
-                            } else {
-                                self.status = xhr.statusText;
-                            }
-                            break;
-                    }
-                };
+                xhr.onreadystatechange = self.xhrState(xhr, self, function (xhr, self) {
+                    self.books = JSON.parse(xhr.responseText).query.results.rss.channel.item.map(function (obj) {
+                        return {
+                            title: obj.title[0],
+                            author: obj.author,
+                            publisher: obj.publisher,
+                            link: obj.link
+                        };
+                    });
+                });
                 xhr.send();
+            },
+            xhrState: function (xhr, self, done) {
+                switch (xhr.readyState) {
+                    case XMLHttpRequest.UNSENT:
+                        break;
+                    case XMLHttpRequest.OPENED:
+                    case XMLHttpRequest.HEADERS_RECEIVED:
+                    case XMLHttpRequest.LOADING:
+                        self.status = 'Loading...';
+                        break;
+                    case XMLHttpRequest.DONE:
+                        if (xhr.status === 200) {
+                            done(xhr, self);
+                            self.status = 'Done';
+                        } else {
+                            self.status = xhr.statusText;
+                        }
+                        break;
+                }
             }
         },
     });
