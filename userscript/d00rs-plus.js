@@ -55,7 +55,7 @@
     }
 
     function fillForm(selector, value) {
-        document.querySelector(selector).value = value != null ? value : '';
+        document.querySelector(selector).value = value !== null ? value : '';
     }
 
     function fillRequestForm(data) {
