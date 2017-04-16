@@ -5,7 +5,7 @@
 // @description  Enhances the DOORS(Doshisha University Library) Experience
 // @author       Eshin Kunishima
 // @require      https://unpkg.com/vue
-// @match        http://localhost:8989/test.html
+// @match        https://doors.doshisha.ac.jp/opac/bok_req/?lang=*
 // @grant        none
 // ==/UserScript==
 
